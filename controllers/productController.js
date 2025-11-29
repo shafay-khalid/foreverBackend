@@ -88,6 +88,84 @@ const removeProduct = async (req, res) => {
   }
 };
 
+// function for updating product
+const updateProduct = async (req, res) => {
+  try {
+    const {
+      id,
+      name,
+      description,
+      price,
+      category,
+      subCategory,
+      bestseller,
+      sizes,
+    } = req.body;
+
+    // Find the existing product
+    const product = await productModel.findById(id);
+    if (!product) {
+      return res.json({ success: false, message: "Product not found" });
+    }
+
+    // Handle image uploads
+    const image1 = req.files.image1 && req.files.image1[0];
+    const image2 = req.files.image2 && req.files.image2[0];
+    const image3 = req.files.image3 && req.files.image3[0];
+    const image4 = req.files.image4 && req.files.image4[0];
+
+    let imagesUrl = [...product.image]; // Start with existing images
+
+    // Upload new images and replace in the array
+    if (image1) {
+      let result = await cloudinary.uploader.upload(image1.path, {
+        resource_type: "image",
+      });
+      imagesUrl[0] = result.secure_url;
+    }
+    if (image2) {
+      let result = await cloudinary.uploader.upload(image2.path, {
+        resource_type: "image",
+      });
+      imagesUrl[1] = result.secure_url;
+    }
+    if (image3) {
+      let result = await cloudinary.uploader.upload(image3.path, {
+        resource_type: "image",
+      });
+      imagesUrl[2] = result.secure_url;
+    }
+    if (image4) {
+      let result = await cloudinary.uploader.upload(image4.path, {
+        resource_type: "image",
+      });
+      imagesUrl[3] = result.secure_url;
+    }
+
+    // Update product data
+    const updatedData = {
+      name: name || product.name,
+      description: description || product.description,
+      category: category || product.category,
+      price: price ? Number(price) : product.price,
+      subCategory: subCategory || product.subCategory,
+      bestseller: bestseller !== undefined ? (bestseller === "true" ? true : false) : product.bestseller,
+      sizes: sizes ? JSON.parse(sizes.replace(/'/g, '"')) : product.sizes,
+      image: imagesUrl,
+    };
+
+    await productModel.findByIdAndUpdate(id, updatedData);
+
+    res.json({ success: true, message: "Product Updated" });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // function for getting single product info
 const singleProduct = async (req, res) => {
   try {
@@ -107,4 +185,4 @@ const singleProduct = async (req, res) => {
   }
 };
 
-export { listProducts, addProduct, removeProduct, singleProduct };
+export { listProducts, addProduct, removeProduct, updateProduct, singleProduct };
