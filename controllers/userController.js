@@ -44,7 +44,7 @@ const loginUser = async (req, res) => {
 // Route for userRegistration
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password } = req.body;  // Changed back to "name" to match model
 
     // checking if user already exists or not
     const exist = await userModel.findOne({ email });
@@ -69,7 +69,7 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // creating user
-    const newUser = new userModel({ name, email, password: hashedPassword });
+    const newUser = new userModel({ name, email, password: hashedPassword }); 
     const user = await newUser.save();
 
     // generating token
